@@ -121,10 +121,6 @@ async function handleUnfollow(e: Event) {
         <span class="stat-value">{{ formatNumber(profile.totalComments) }}</span>
         <span class="stat-label">评论</span>
       </div>
-      <div v-if="isOwnProfile" class="stat-item">
-        <span class="stat-value">{{ formatNumber(profile.followers) }}</span>
-        <span class="stat-label">关注者</span>
-      </div>
     </div>
 
     <!-- 操作按钮 -->

@@ -76,6 +76,7 @@ const loaders = {
   settings: () => import('@/views/SettingsView.vue'),
   userProfile: () => import('@/views/UserProfileView.vue'),
   login: () => import('@/views/LoginView.vue'),
+  oauthError: () => import('@/views/OAuthErrorView.vue'),
   onboarding: () => import('@/views/OnboardingView.vue'),
   notFound: () => import('@/views/NotFoundView.vue'),
 };
@@ -90,6 +91,7 @@ const views = {
   settings: withRouteLoading(loaders.settings),
   userProfile: withRouteLoading(loaders.userProfile),
   login: withRouteLoading(loaders.login),
+  oauthError: withRouteLoading(loaders.oauthError),
   onboarding: withRouteLoading(loaders.onboarding),
   notFound: withRouteLoading(loaders.notFound),
 };
@@ -228,6 +230,16 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/oauth-error',
+    name: 'oauth-error',
+    component: views.oauthError,
+    meta: {
+      title: '星图ΣΤΑΘΜΗ - 登录失败',
+      fullscreen: true,
+      public: true,
+    },
+  },
+  {
     path: '/onboarding',
     name: 'onboarding',
     component: views.onboarding,
@@ -277,8 +289,9 @@ router.beforeEach(async (to) => {
   const isAuthenticated = userStore.isAuthenticated;
   const needsOnboarding = userStore.requiresOnboarding;
 
-  // 全局认证：非 /login 页面都需要登录
-  if (!isAuthenticated && to.path !== '/login') {
+  // 全局认证：非公开页面都需要登录
+  const publicPaths = ['/login', '/oauth-error'];
+  if (!isAuthenticated && !publicPaths.includes(to.path)) {
     const redirect = to.fullPath !== '/login' ? to.fullPath : undefined;
     return {
       path: '/login',
