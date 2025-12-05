@@ -92,7 +92,8 @@ export class PostsService {
     offset = 0,
     sortByUpdated = false,
     includeInvalid = false,
-    sort?: SortOption
+    sort?: SortOption,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
     return this.searchRepository.listByAuthorsOrTags(
       authorIds,
@@ -101,7 +102,8 @@ export class PostsService {
       offset,
       sortByUpdated,
       includeInvalid,
-      sort
+      sort,
+      channelIds
     );
   }
 
@@ -168,9 +170,10 @@ export class PostsService {
     limit = 10,
     offset = 0,
     includeInvalid = false,
-    sort?: SortOption
+    sort?: SortOption,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
-    return this.listByAuthors(authorIds, limit, offset, false, includeInvalid, sort);
+    return this.searchRepository.listByAuthors(authorIds, limit, offset, false, includeInvalid, sort, channelIds);
   }
 
   public async listFollowingTags(
@@ -178,9 +181,10 @@ export class PostsService {
     limit = 10,
     offset = 0,
     includeInvalid = false,
-    sort?: SortOption
+    sort?: SortOption,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
-    return this.listByTags(tagNames, limit, offset, false, includeInvalid, sort);
+    return this.searchRepository.listByTags(tagNames, limit, offset, false, includeInvalid, sort, channelIds);
   }
 
   public async listFollowingAll(
@@ -189,9 +193,10 @@ export class PostsService {
     limit = 10,
     offset = 0,
     includeInvalid = false,
-    sort?: SortOption
+    sort?: SortOption,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
-    return this.listByAuthorsOrTags(authorIds, tagNames, limit, offset, false, includeInvalid, sort);
+    return this.listByAuthorsOrTags(authorIds, tagNames, limit, offset, false, includeInvalid, sort, channelIds);
   }
 
   public async listFollowingRecentUpdates(
@@ -200,10 +205,11 @@ export class PostsService {
     limit = 10,
     offset = 0,
     includeInvalid = false,
-    sort?: SortOption
+    sort?: SortOption,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
     const fetchLimit = limit + offset + 20;
-    const raw = await this.listByAuthorsOrTags(authorIds, tagNames, fetchLimit, 0, true, includeInvalid, sort);
+    const raw = await this.listByAuthorsOrTags(authorIds, tagNames, fetchLimit, 0, true, includeInvalid, sort, channelIds);
     const filtered = raw.posts.filter((post) => {
       if (!post.updatedAt) return false;
       const updated = new Date(post.updatedAt);
@@ -221,15 +227,30 @@ export class PostsService {
     postIds: string[],
     limit = 10,
     offset = 0,
-    includeInvalid = false
+    includeInvalid = false,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
     if (postIds.length === 0) {
       return { posts: [], total: 0 };
     }
-    const result = await this.listByIds(postIds, limit, offset, includeInvalid);
+    // 先获取所有帖子，再按频道过滤
+    const allPosts = await this.readRepository.findByIds(postIds, includeInvalid);
+    const postMap = new Map(allPosts.map((post) => [post.id, post]));
+    let orderedPosts = postIds
+      .map((id) => postMap.get(id))
+      .filter((post): post is NonNullable<typeof post> => Boolean(post));
+
+    // 按频道过滤
+    if (channelIds && channelIds.length > 0) {
+      const channelSet = new Set(channelIds);
+      orderedPosts = orderedPosts.filter((post) => channelSet.has(post.categoryId));
+    }
+
+    const start = Math.min(offset, orderedPosts.length);
+    const end = Math.min(offset + limit, orderedPosts.length);
     return {
-      ...result,
-      posts: this.markFollowed(result.posts),
+      posts: this.markFollowed(orderedPosts.slice(start, end)),
+      total: orderedPosts.length,
     };
   }
 

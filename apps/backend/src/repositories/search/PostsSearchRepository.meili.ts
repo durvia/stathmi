@@ -290,13 +290,22 @@ export class MeilisearchPostsSearchRepository implements PostsSearchRepository {
     offset: number,
     sortByUpdated = false,
     includeInvalid = false,
-    sort?: SortOption
+    sort?: SortOption,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
     if (authorIds.length === 0) {
       return { posts: [], total: 0 };
     }
     const authorFilter = this.buildInExpression('authorId', authorIds);
     const filters = this.buildBaseFilters(includeInvalid, authorFilter ? [authorFilter] : []);
+
+    // 频道筛选
+    if (channelIds?.length) {
+      const channelExpr = this.buildInExpression('categoryId', channelIds);
+      if (channelExpr) {
+        filters.push(channelExpr);
+      }
+    }
 
     // 检查是否使用智能排序
     if (sort?.field === 'weighted') {
@@ -340,13 +349,22 @@ export class MeilisearchPostsSearchRepository implements PostsSearchRepository {
     offset: number,
     sortByUpdated = false,
     includeInvalid = false,
-    sort?: SortOption
+    sort?: SortOption,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
     if (tagNames.length === 0) {
       return { posts: [], total: 0 };
     }
     const tagsFilter = this.buildInExpression('tags', tagNames);
     const filters = this.buildBaseFilters(includeInvalid, tagsFilter ? [tagsFilter] : []);
+
+    // 频道筛选
+    if (channelIds?.length) {
+      const channelExpr = this.buildInExpression('categoryId', channelIds);
+      if (channelExpr) {
+        filters.push(channelExpr);
+      }
+    }
 
     // 检查是否使用智能排序
     if (sort?.field === 'weighted') {
@@ -368,7 +386,8 @@ export class MeilisearchPostsSearchRepository implements PostsSearchRepository {
     offset: number,
     sortByUpdated = false,
     includeInvalid = false,
-    sort?: SortOption
+    sort?: SortOption,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
     if (authorIds.length === 0 && tagNames.length === 0) {
       return { posts: [], total: 0 };
@@ -385,6 +404,14 @@ export class MeilisearchPostsSearchRepository implements PostsSearchRepository {
     }
     if (orParts.length > 0) {
       filters.push(`(${orParts.join(' OR ')})`);
+    }
+
+    // 频道筛选
+    if (channelIds?.length) {
+      const channelExpr = this.buildInExpression('categoryId', channelIds);
+      if (channelExpr) {
+        filters.push(channelExpr);
+      }
     }
 
     // 检查是否使用智能排序

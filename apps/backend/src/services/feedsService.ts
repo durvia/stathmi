@@ -71,9 +71,10 @@ export class FeedsService {
     limit: number,
     offset: number,
     includeInvalid: boolean,
-    sort: SortOption | undefined
+    sort: SortOption | undefined,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
-    const result = await this.postsService.listFollowingAll(authorIds, tagNames, limit, offset, includeInvalid, sort);
+    const result = await this.postsService.listFollowingAll(authorIds, tagNames, limit, offset, includeInvalid, sort, channelIds);
     return this.sortResult(result, sort);
   }
 
@@ -82,9 +83,10 @@ export class FeedsService {
     limit: number,
     offset: number,
     includeInvalid: boolean,
-    sort: SortOption | undefined
+    sort: SortOption | undefined,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
-    const result = await this.postsService.listFollowingAuthors(authorIds, limit, offset, includeInvalid, sort);
+    const result = await this.postsService.listFollowingAuthors(authorIds, limit, offset, includeInvalid, sort, channelIds);
     return this.sortResult(result, sort);
   }
 
@@ -93,9 +95,10 @@ export class FeedsService {
     limit: number,
     offset: number,
     includeInvalid: boolean,
-    sort: SortOption | undefined
+    sort: SortOption | undefined,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
-    const result = await this.postsService.listFollowingTags(tagNames, limit, offset, includeInvalid, sort);
+    const result = await this.postsService.listFollowingTags(tagNames, limit, offset, includeInvalid, sort, channelIds);
     return this.sortResult(result, sort);
   }
 
@@ -104,9 +107,10 @@ export class FeedsService {
     limit: number,
     offset: number,
     includeInvalid: boolean,
-    sort: SortOption | undefined
+    sort: SortOption | undefined,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
-    const result = await this.postsService.listFollowingDiscord(postIds, limit, offset, includeInvalid);
+    const result = await this.postsService.listFollowingDiscord(postIds, limit, offset, includeInvalid, channelIds);
     return this.sortResult(result, sort);
   }
 
@@ -116,7 +120,8 @@ export class FeedsService {
     limit: number,
     offset: number,
     includeInvalid: boolean,
-    sort: SortOption | undefined
+    sort: SortOption | undefined,
+    channelIds?: string[]
   ): Promise<PaginatedPosts> {
     const result = await this.postsService.listFollowingRecentUpdates(
       authorIds,
@@ -124,7 +129,8 @@ export class FeedsService {
       limit,
       offset,
       includeInvalid,
-      sort
+      sort,
+      channelIds
     );
     return this.sortResult(result, sort);
   }

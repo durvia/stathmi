@@ -183,9 +183,10 @@ export const postsRoutes: FastifyPluginCallback = (app, _opts, done) => {
     const { limit, offset, includeInvalid } = parsePagination(query);
     const sort = parseSort(query);
     const userId = request.ctx!.userId;
+    const channelIds = toStringArray(query?.channels);
     const authorIds = await followsService.listAuthorIds(userId);
     const tagNames = await tagFollowsService.listFollowedTagNames(userId);
-    const result = await feedsService.listFollowingAll(authorIds, tagNames, limit, offset, includeInvalid, sort);
+    const result = await feedsService.listFollowingAll(authorIds, tagNames, limit, offset, includeInvalid, sort, channelIds.length > 0 ? channelIds : undefined);
     result.posts = await feedsService.markUserParticipation(result.posts, userId);
     return reply.send(result);
   });
@@ -195,8 +196,9 @@ export const postsRoutes: FastifyPluginCallback = (app, _opts, done) => {
     const { limit, offset, includeInvalid } = parsePagination(query);
     const sort = parseSort(query);
     const userId = request.ctx!.userId;
+    const channelIds = toStringArray(query?.channels);
     const authorIds = await followsService.listAuthorIds(userId);
-    const result = await feedsService.listFollowingAuthors(authorIds, limit, offset, includeInvalid, sort);
+    const result = await feedsService.listFollowingAuthors(authorIds, limit, offset, includeInvalid, sort, channelIds.length > 0 ? channelIds : undefined);
     result.posts = await feedsService.markUserParticipation(result.posts, userId);
     return reply.send(result);
   });
@@ -206,8 +208,9 @@ export const postsRoutes: FastifyPluginCallback = (app, _opts, done) => {
     const { limit, offset, includeInvalid } = parsePagination(query);
     const sort = parseSort(query);
     const userId = request.ctx!.userId;
+    const channelIds = toStringArray(query?.channels);
     const tagNames = await tagFollowsService.listFollowedTagNames(userId);
-    const result = await feedsService.listFollowingTags(tagNames, limit, offset, includeInvalid, sort);
+    const result = await feedsService.listFollowingTags(tagNames, limit, offset, includeInvalid, sort, channelIds.length > 0 ? channelIds : undefined);
     result.posts = await feedsService.markUserParticipation(result.posts, userId);
     return reply.send(result);
   });
@@ -217,6 +220,7 @@ export const postsRoutes: FastifyPluginCallback = (app, _opts, done) => {
     const { limit, offset, includeInvalid } = parsePagination(query);
     const sort = parseSort(query);
     const userId = request.ctx!.userId;
+    const channelIds = toStringArray(query?.channels);
     // 需要的最大数量：分页窗口 + 缓冲，避免去重后数量不足
     const fetchLimit = limit + offset + 50;
     const { threadIds } = await postMembersRepository.listParticipatedThreadIds(
@@ -225,7 +229,7 @@ export const postsRoutes: FastifyPluginCallback = (app, _opts, done) => {
       0,
       includeInvalid
     );
-    const result = await feedsService.listFollowingDiscord(threadIds, limit, offset, includeInvalid, sort);
+    const result = await feedsService.listFollowingDiscord(threadIds, limit, offset, includeInvalid, sort, channelIds.length > 0 ? channelIds : undefined);
     return reply.send(result);
   });
 
@@ -234,9 +238,10 @@ export const postsRoutes: FastifyPluginCallback = (app, _opts, done) => {
     const { limit, offset, includeInvalid } = parsePagination(query);
     const sort = parseSort(query);
     const userId = request.ctx!.userId;
+    const channelIds = toStringArray(query?.channels);
     const authorIds = await followsService.listAuthorIds(userId);
     const tagNames = await tagFollowsService.listFollowedTagNames(userId);
-    const result = await feedsService.listFollowingRecentUpdates(authorIds, tagNames, limit, offset, includeInvalid, sort);
+    const result = await feedsService.listFollowingRecentUpdates(authorIds, tagNames, limit, offset, includeInvalid, sort, channelIds.length > 0 ? channelIds : undefined);
     result.posts = await feedsService.markUserParticipation(result.posts, userId);
     return reply.send(result);
   });

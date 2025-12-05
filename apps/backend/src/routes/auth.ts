@@ -29,7 +29,7 @@ export const authRoutes: FastifyPluginCallback = (app, _opts, done) => {
     .map((value) => value.trim())
     .filter(Boolean);
 
-  const scope = ['identify', 'email'];
+  const scope = ['identify'];
   if (discordServerId) {
     scope.push('guilds', 'guilds.members.read');
   }
