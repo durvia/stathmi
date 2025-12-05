@@ -15,22 +15,9 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('vue-router') || id.includes('pinia') || id.includes('@vueuse') || id.includes('/vue/')) {
-              return 'vendor-vue';
-            }
-            if (id.includes('naive-ui')) {
-              // 按 naive-ui 内部模块拆分
-              if (id.includes('date-picker') || id.includes('time-picker') || id.includes('calendar')) {
-                return 'naive-date';
-              }
-              if (id.includes('upload') || id.includes('image')) {
-                return 'naive-media';
-              }
-              return 'naive-core';
-            }
-          }
+        manualChunks: {
+          'vendor-vue': ['vue', 'vue-router', 'pinia', '@vueuse/core'],
+          'vendor-naive': ['naive-ui'],
         },
       },
     },
